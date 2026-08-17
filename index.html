@@ -701,8 +701,14 @@
     fetchRates();
 
     if ('serviceWorker' in navigator) {
+      var swReloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function(){
+        if (swReloaded) return;
+        swReloaded = true;
+        location.reload();
+      });
       window.addEventListener('load', function(){
-        navigator.serviceWorker.register('./sw.js').catch(function(){});
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(function(){});
       });
     }
   })();
