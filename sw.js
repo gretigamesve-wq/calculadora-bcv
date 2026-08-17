@@ -1,4 +1,4 @@
-var CACHE_NAME = 'calculadora-bcv-v1';
+var CACHE_NAME = 'calculadora-bcv-v2';
 var APP_SHELL = [
   './',
   './index.html',
@@ -24,23 +24,20 @@ self.addEventListener('activate', function(event){
   self.clients.claim();
 });
 
+// Red primero para todo: siempre intenta traer lo más reciente,
+// y solo usa la copia en caché si no hay conexión.
 self.addEventListener('fetch', function(event){
-  var url = new URL(event.request.url);
-
-  if (url.pathname.endsWith('rates.json')) {
-    event.respondWith(
-      fetch(event.request).then(function(res){
-        var copy = res.clone();
-        caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
-        return res;
-      }).catch(function(){ return caches.match(event.request); })
-    );
-    return;
-  }
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request).then(function(cached){
-      return cached || fetch(event.request);
+    fetch(event.request).then(function(res){
+      var copy = res.clone();
+      caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
+      return res;
+    }).catch(function(){
+      return caches.match(event.request).then(function(cached){
+        return cached || caches.match('./index.html');
+      });
     })
   );
 });
