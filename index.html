@@ -502,7 +502,7 @@
       <a href="https://www.bcv.org.ve/" target="_blank" rel="noopener">bcv.org.ve</a>
       <a href="https://p2p.binance.com/" target="_blank" rel="noopener">Binance P2P</a>
     </div>
-    <p class="foot-note" id="syncNote">Los datos se sincronizan automáticamente cada 6 horas mediante GitHub Actions. El BCV publica su tasa oficial una vez al día; el paralelo de Binance P2P cambia en tiempo real según la oferta y la demanda. La brecha cambiaria se calcula como (Binance − BCV oficial) ÷ BCV oficial, ambas en USD.</p>
+    <p class="foot-note" id="syncNote">El dólar y el euro oficiales del BCV se consultan en vivo cada vez que abres o refrescas la página. El paralelo de Binance P2P se sincroniza cada 6 horas mediante GitHub Actions (su propia API no permite consultarlo en vivo desde el navegador). La brecha cambiaria se calcula como (Binance − BCV oficial) ÷ BCV oficial, ambas en USD.</p>
   </footer>
 </div>
 
@@ -609,12 +609,14 @@
       recomputeConverter();
     }
 
-    function applyFetchedRates(data){
+    function applyFetchedRates(data, bcvLive){
       DEFAULTS.bcvUsd = data.bcvUsd;
       DEFAULTS.bcvEur = data.bcvEur;
       DEFAULTS.binance = data.binance;
       updatedAt = data.updatedAt;
-      datePill.textContent = 'Sincronizado: ' + formatDateLabel(updatedAt);
+      datePill.textContent = bcvLive
+        ? 'BCV en vivo · Binance sincronizado ' + formatDateLabel(updatedAt)
+        : 'Sincronizado: ' + formatDateLabel(updatedAt);
 
       var focused = document.activeElement;
       if (focused !== inBcvUsd) inBcvUsd.value = data.bcvUsd;
@@ -623,10 +625,33 @@
       recomputeAll();
     }
 
+    function fetchLiveBcv(){
+      return Promise.all([
+        fetch('https://ve.dolarapi.com/v1/dolares/oficial').then(function(r){ if (!r.ok) throw new Error('bcv usd'); return r.json(); }),
+        fetch('https://ve.dolarapi.com/v1/euros').then(function(r){ if (!r.ok) throw new Error('bcv eur'); return r.json(); })
+      ]).then(function(results){
+        var usdRow = results[0];
+        var eurRow = results[1].filter(function(row){ return row.fuente === 'oficial'; })[0];
+        if (!usdRow || !usdRow.promedio || !eurRow || !eurRow.promedio) throw new Error('datos incompletos');
+        return {
+          bcvUsd: Math.round(usdRow.promedio * 100) / 100,
+          bcvEur: Math.round(eurRow.promedio * 100) / 100
+        };
+      });
+    }
+
     function fetchRates(){
       return fetch('./rates.json?t=' + Date.now(), { cache: 'no-store' })
         .then(function(res){ if (!res.ok) throw new Error('bad response'); return res.json(); })
-        .then(function(data){ applyFetchedRates(data); return data; })
+        .then(function(data){
+          return fetchLiveBcv()
+            .then(function(live){
+              applyFetchedRates({ bcvUsd: live.bcvUsd, bcvEur: live.bcvEur, binance: data.binance, updatedAt: data.updatedAt }, true);
+            })
+            .catch(function(){
+              applyFetchedRates(data, false);
+            });
+        })
         .catch(function(){
           datePill.textContent = 'Sin conexión — mostrando últimos valores';
         });
