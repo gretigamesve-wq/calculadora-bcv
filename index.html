@@ -478,13 +478,14 @@
       if (!iso) return 'sin datos aún';
       var d = new Date(iso);
       if (isNaN(d.getTime())) return 'sin datos aún';
+      var ve = new Date(d.getTime() - 4 * 60 * 60 * 1000); // Venezuela = UTC-4 (sin horario de verano)
       var meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-      var dia = d.getUTCDate();
-      var mes = meses[d.getUTCMonth()];
-      var anio = d.getUTCFullYear();
-      var hh = String(d.getUTCHours()).padStart(2, '0');
-      var mm = String(d.getUTCMinutes()).padStart(2, '0');
-      return dia + ' ' + mes + ' ' + anio + ', ' + hh + ':' + mm + ' UTC';
+      var dia = ve.getUTCDate();
+      var mes = meses[ve.getUTCMonth()];
+      var anio = ve.getUTCFullYear();
+      var hh = String(ve.getUTCHours()).padStart(2, '0');
+      var mm = String(ve.getUTCMinutes()).padStart(2, '0');
+      return dia + ' ' + mes + ' ' + anio + ', ' + hh + ':' + mm + ' (hora de Venezuela)';
     }
 
     function readRates(){
