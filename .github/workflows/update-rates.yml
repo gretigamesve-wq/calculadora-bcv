@@ -1,0 +1,40 @@
+name: Actualizar tasas
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-rates
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Actualizar rates.json
+        run: python scripts/update_rates.py
+
+      - name: Commit y push si hay cambios
+        run: |
+          git config user.name "calculadora-bcv-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if git diff --quiet -- rates.json; then
+            echo "Sin cambios en rates.json"
+          else
+            git add rates.json
+            git commit -m "Actualizar tasas $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es-VE">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculadora BCV</title>
+<meta name="description" content="Convierte bolívares a dólares y euros oficiales del BCV y a USDT del paralelo de Binance P2P, con la brecha cambiaria calculada al instante.">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14262B">
+
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Calc. BCV">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+  :root{
+    --bg:#F1F4F0;
+    --surface:#FFFFFF;
+    --surface-2:#E7EBE3;
+    --text:#14262B;
+    --text-soft:#4E6066;
+    --rule:#DCE1D8;
+    --gold:#8A5D1D;
+    --gold-fill:rgba(154,107,33,0.14);
+    --teal:#0B7A6E;
+    --teal-fill:rgba(11,122,110,0.14);
+    --coral:#B84420;
+    --coral-fill:rgba(184,68,32,0.14);
+    --shadow: 0 1px 2px rgba(20,38,43,0.06), 0 10px 28px rgba(20,38,43,0.07);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0D1A1E;
+      --surface:#14262B;
+      --surface-2:#1B2F35;
+      --text:#ECF1ED;
+      --text-soft:#9FB2AF;
+      --rule:#26393F;
+      --gold:#D9A94E;
+      --gold-fill:rgba(217,169,78,0.16);
+      --teal:#3FCBBB;
+      --teal-fill:rgba(63,203,187,0.16);
+      --coral:#E8875A;
+      --coral-fill:rgba(232,135,90,0.18);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0D1A1E;
+    --surface:#14262B;
+    --surface-2:#1B2F35;
+    --text:#ECF1ED;
+    --text-soft:#9FB2AF;
+    --rule:#26393F;
+    --gold:#D9A94E;
+    --gold-fill:rgba(217,169,78,0.16);
+    --teal:#3FCBBB;
+    --teal-fill:rgba(63,203,187,0.16);
+    --coral:#E8875A;
+    --coral-fill:rgba(232,135,90,0.18);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 28px rgba(0,0,0,0.35);
+  }
+
+  *{box-sizing:border-box;}
+  html{background:var(--bg);}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Trebuchet MS','Segoe UI',Verdana,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    min-height:100dvh;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .page{
+    max-width:640px;
+    margin:0 auto;
+    padding:2.5rem 1.5rem 4rem;
+    display:flex;
+    flex-direction:column;
+    gap:1.75rem;
+  }
+  h1,h2{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Noto Serif',serif;
+    font-weight:600;
+    margin:0;
+    text-wrap:balance;
+  }
+  a{color:var(--teal);}
+  a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--teal);
+    outline-offset:2px;
+  }
+  input[type=number]{-moz-appearance:textfield;}
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+
+  .masthead{display:flex;flex-direction:column;gap:0.5rem;}
+  .eyebrow{
+    font-family:'Trebuchet MS','Segoe UI',sans-serif;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text-soft);
+    font-weight:700;
+  }
+  h1{font-size:clamp(1.9rem, 4vw + 1rem, 2.6rem); color:var(--text);}
+  .lede{
+    margin:0;
+    max-width:52ch;
+    color:var(--text-soft);
+    font-size:1rem;
+    line-height:1.5;
+  }
+
+  .converter{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:22px;
+    padding:2rem clamp(1.25rem,5vw,2.25rem) 1.5rem;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:1.1rem;
+  }
+  .converter-eyebrow{
+    font-size:0.75rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--text-soft);
+  }
+  .bs-field{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:0.5rem;
+    width:100%;
+    border-bottom:2px solid var(--gold);
+    padding-bottom:0.65rem;
+  }
+  .bs-currency{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    font-size:clamp(1.5rem,4vw,2rem);
+    color:var(--text-soft);
+    font-weight:600;
+  }
+  .bs-input{
+    width:100%;
+    max-width:340px;
+    border:none;
+    background:transparent;
+    color:var(--text);
+    font-family:'Cascadia Code',Consolas,'SF Mono','Roboto Mono',monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:clamp(2.2rem, 9vw, 3.2rem);
+    font-weight:600;
+    text-align:center;
+    padding:0;
+  }
+  .bs-input:focus{outline:none;}
+
+  .chip-row{display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:center;}
+  .chip{
+    background:var(--surface-2);
+    border:1px solid var(--rule);
+    color:var(--text);
+    font-family:'Cascadia Code',Consolas,monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:0.82rem;
+    padding:0.4rem 0.85rem;
+    border-radius:100px;
+    cursor:pointer;
+  }
+  .chip:hover{border-color:var(--gold); color:var(--gold);}
+
+  .result-list{width:100%; margin-top:0.4rem;}
+  .result-row{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:baseline;
+    column-gap:0.75rem;
+    padding:0.85rem 0;
+    border-top:1px solid var(--rule);
+  }
+  .result-row:last-child{padding-bottom:0.1rem;}
+  .result-label{
+    display:flex;
+    align-items:center;
+    gap:0.5rem;
+    font-size:0.88rem;
+    color:var(--text-soft);
+    font-weight:700;
+  }
+  .result-value{
+    font-family:'Cascadia Code',Consolas,'SF Mono','Roboto Mono',monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:1.35rem;
+    font-weight:600;
+    color:var(--text);
+    white-space:nowrap;
+  }
+  .result-cap{
+    grid-column:1 / -1;
+    margin:0.15rem 0 0;
+    font-size:0.74rem;
+    color:var(--text-soft);
+    font-variant-numeric:tabular-nums;
+  }
+  .card-tag{
+    font-size:0.66rem;
+    font-weight:700;
+    letter-spacing:0.06em;
+    padding:0.16rem 0.42rem;
+    border-radius:6px;
+  }
+  .tag-gold{background:var(--gold-fill); color:var(--gold);}
+  .tag-teal{background:var(--teal-fill); color:var(--teal);}
+
+  .rates{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:20px;
+    padding:1.5rem clamp(1.25rem,5vw,2.25rem);
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    gap:1.15rem;
+  }
+  .rates-head{display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;}
+  .rates-head h2{font-size:1.05rem;}
+  .rates-head-right{display:flex; align-items:center; gap:0.5rem;}
+  .date-pill{
+    font-size:0.76rem;
+    color:var(--text-soft);
+    border:1px solid var(--rule);
+    border-radius:100px;
+    padding:0.3rem 0.75rem;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .refresh-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:28px;
+    height:28px;
+    padding:0;
+    border-radius:50%;
+    border:1px solid var(--rule);
+    background:var(--surface-2);
+    color:var(--text-soft);
+    cursor:pointer;
+    flex:none;
+  }
+  .refresh-btn:hover{border-color:var(--teal); color:var(--teal);}
+  .refresh-btn.is-spinning svg{animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @media (prefers-reduced-motion: reduce){
+    .refresh-btn.is-spinning svg{animation:none;}
+  }
+
+  .rates-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:0.75rem;
+  }
+  .field{display:flex; flex-direction:column; gap:0.35rem; font-size:0.76rem; color:var(--text-soft); font-weight:700; min-width:0;}
+  .field input{
+    width:100%;
+    min-width:0;
+    font-family:'Cascadia Code',Consolas,'SF Mono','Roboto Mono',monospace;
+    font-size:0.95rem;
+    font-variant-numeric:tabular-nums;
+    padding:0.5rem 0.6rem;
+    border-radius:9px;
+    border:1px solid var(--rule);
+    background:var(--surface-2);
+    color:var(--text);
+  }
+
+  .gap-row{
+    display:flex;
+    flex-direction:column;
+    gap:0.5rem;
+    padding-top:0.35rem;
+    border-top:1px solid var(--rule);
+  }
+  .gap-stat{display:flex; align-items:baseline; justify-content:space-between; gap:0.75rem;}
+  .gap-label{font-size:0.8rem; color:var(--text-soft); font-weight:700;}
+  .gap-num{
+    font-family:'Cascadia Code',Consolas,'SF Mono','Roboto Mono',monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:1.5rem;
+    font-weight:600;
+    color:var(--coral);
+  }
+  .bar-track{
+    display:flex;
+    width:100%;
+    height:10px;
+    background:var(--surface-2);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .bar-seg{height:100%; width:0; transition:width 0.4s ease;}
+  .bar-bcv{background:var(--gold);}
+  .bar-gap{background:var(--coral);}
+  .gap-note{margin:0.15rem 0 0; font-size:0.82rem; color:var(--text-soft); line-height:1.4;}
+  .gap-note strong{color:var(--text);}
+
+  .reset-btn{
+    align-self:flex-start;
+    background:none;
+    border:1px solid var(--rule);
+    color:var(--text);
+    font-family:'Trebuchet MS','Segoe UI',sans-serif;
+    font-size:0.8rem;
+    font-weight:700;
+    padding:0.5rem 0.9rem;
+    border-radius:100px;
+    cursor:pointer;
+  }
+  .reset-btn:hover{border-color:var(--teal); color:var(--teal);}
+
+  .foot{
+    border-top:1px solid var(--rule);
+    padding-top:1.25rem;
+    display:flex;
+    flex-direction:column;
+    gap:0.55rem;
+  }
+  .foot-sources{display:flex; gap:0.85rem; align-items:center; font-size:0.82rem; color:var(--text-soft); flex-wrap:wrap;}
+  .foot-sources a{font-weight:700; text-decoration:none;}
+  .foot-sources a:hover{text-decoration:underline;}
+  .foot-note{margin:0; font-size:0.75rem; color:var(--text-soft); line-height:1.5;}
+
+  @media (max-width:480px){
+    .rates-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <div class="eyebrow">Monitor cambiario · Venezuela</div>
+    <h1>Calculadora BCV</h1>
+    <p class="lede">Escribe un monto en bolívares y mira al instante cuánto es en dólares y euros oficiales del BCV, y en USDT al paralelo de Binance.</p>
+  </header>
+
+  <section class="converter" aria-label="Conversor de bolívares">
+    <div class="converter-eyebrow">Tengo en bolívares</div>
+    <div class="bs-field">
+      <span class="bs-currency">Bs.</span>
+      <input type="number" id="bsAmount" class="bs-input" value="1000" step="0.01" min="0" inputmode="decimal" aria-label="Monto en bolívares">
+    </div>
+    <div class="chip-row">
+      <button type="button" class="chip" data-amount="100">100</button>
+      <button type="button" class="chip" data-amount="1000">1.000</button>
+      <button type="button" class="chip" data-amount="10000">10.000</button>
+      <button type="button" class="chip" data-amount="100000">100.000</button>
+    </div>
+
+    <div class="result-list" aria-live="polite">
+      <div class="result-row">
+        <div class="result-label"><span class="card-tag tag-gold">USD</span>BCV oficial</div>
+        <div class="result-value">US$ <span id="outUsdBcv">1,29</span></div>
+        <p class="result-cap">1 US$ = Bs. <span id="capUsdBcv">772,54</span></p>
+      </div>
+      <div class="result-row">
+        <div class="result-label"><span class="card-tag tag-gold">EUR</span>BCV oficial</div>
+        <div class="result-value">€ <span id="outEurBcv">1,12</span></div>
+        <p class="result-cap">1 € = Bs. <span id="capEurBcv">894,49</span></p>
+      </div>
+      <div class="result-row">
+        <div class="result-label"><span class="card-tag tag-teal">USDT</span>Binance P2P</div>
+        <div class="result-value">USDT <span id="outUsdtBinance">1,15</span></div>
+        <p class="result-cap">1 USDT = Bs. <span id="capUsdtBinance">869,55</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rates" aria-label="Tasas y brecha cambiaria">
+    <div class="rates-head">
+      <h2>Tasas de hoy</h2>
+      <div class="rates-head-right">
+        <span class="date-pill" id="datePill">Cargando…</span>
+        <button type="button" class="refresh-btn" id="refreshBtn" aria-label="Actualizar ahora" title="Actualizar ahora">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="rates-grid">
+      <label class="field">
+        <span>BCV oficial (USD)</span>
+        <input type="number" id="inBcvUsd" step="0.01" min="0" value="772.54" inputmode="decimal">
+      </label>
+      <label class="field">
+        <span>BCV oficial (EUR)</span>
+        <input type="number" id="inBcvEur" step="0.01" min="0" value="894.49" inputmode="decimal">
+      </label>
+      <label class="field">
+        <span>Binance P2P (USDT)</span>
+        <input type="number" id="inBinance" step="0.01" min="0" value="869.55" inputmode="decimal">
+      </label>
+    </div>
+
+    <div class="gap-row">
+      <div class="gap-stat">
+        <span class="gap-label">Brecha cambiaria (USD)</span>
+        <span class="gap-num" id="gapValue">+12,56%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-seg bar-bcv" id="barBcv"></div>
+        <div class="bar-seg bar-gap" id="barGap"></div>
+      </div>
+      <p class="gap-note" id="gapNote">El paralelo de Binance está <strong>12,56%</strong> por encima de la tasa oficial del BCV.</p>
+    </div>
+
+    <button type="button" class="reset-btn" id="resetBtn">Restablecer valores sincronizados</button>
+  </section>
+
+  <footer class="foot">
+    <div class="foot-sources">
+      <span>Fuentes:</span>
+      <a href="https://www.bcv.org.ve/" target="_blank" rel="noopener">bcv.org.ve</a>
+      <a href="https://p2p.binance.com/" target="_blank" rel="noopener">Binance P2P</a>
+    </div>
+    <p class="foot-note" id="syncNote">Los datos se sincronizan automáticamente cada 6 horas mediante GitHub Actions. El BCV publica su tasa oficial una vez al día; el paralelo de Binance P2P cambia en tiempo real según la oferta y la demanda. La brecha cambiaria se calcula como (Binance − BCV oficial) ÷ BCV oficial, ambas en USD.</p>
+  </footer>
+</div>
+
+<script>
+  (function(){
+    var DEFAULTS = { bcvUsd: 772.54, bcvEur: 894.49, binance: 869.55 };
+    var rates = { bcvUsd: DEFAULTS.bcvUsd, bcvEur: DEFAULTS.bcvEur, binance: DEFAULTS.binance };
+    var updatedAt = null;
+
+    var bsAmount = document.getElementById('bsAmount');
+    var chips = document.querySelectorAll('.chip');
+    var inBcvUsd = document.getElementById('inBcvUsd');
+    var inBcvEur = document.getElementById('inBcvEur');
+    var inBinance = document.getElementById('inBinance');
+    var resetBtn = document.getElementById('resetBtn');
+    var refreshBtn = document.getElementById('refreshBtn');
+    var datePill = document.getElementById('datePill');
+    var syncNote = document.getElementById('syncNote');
+
+    var outUsdBcv = document.getElementById('outUsdBcv');
+    var outEurBcv = document.getElementById('outEurBcv');
+    var outUsdtBinance = document.getElementById('outUsdtBinance');
+    var capUsdBcv = document.getElementById('capUsdBcv');
+    var capEurBcv = document.getElementById('capEurBcv');
+    var capUsdtBinance = document.getElementById('capUsdtBinance');
+    var gapValue = document.getElementById('gapValue');
+    var gapNote = document.getElementById('gapNote');
+    var barBcv = document.getElementById('barBcv');
+    var barGap = document.getElementById('barGap');
+
+    function formatBs(n, decimals){
+      if (decimals === undefined) decimals = 2;
+      if (!isFinite(n)) n = 0;
+      var fixed = Math.abs(n).toFixed(decimals);
+      var parts = fixed.split('.');
+      var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      var out = decimals > 0 ? intPart + ',' + parts[1] : intPart;
+      return (n < 0 ? '-' : '') + out;
+    }
+
+    function formatDateLabel(iso){
+      if (!iso) return 'sin datos aún';
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return 'sin datos aún';
+      var meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      var dia = d.getUTCDate();
+      var mes = meses[d.getUTCMonth()];
+      var anio = d.getUTCFullYear();
+      var hh = String(d.getUTCHours()).padStart(2, '0');
+      var mm = String(d.getUTCMinutes()).padStart(2, '0');
+      return dia + ' ' + mes + ' ' + anio + ', ' + hh + ':' + mm + ' UTC';
+    }
+
+    function readRates(){
+      var bcv = parseFloat(inBcvUsd.value);
+      var eur = parseFloat(inBcvEur.value);
+      var bin = parseFloat(inBinance.value);
+      rates.bcvUsd = isFinite(bcv) ? bcv : 0;
+      rates.bcvEur = isFinite(eur) ? eur : 0;
+      rates.binance = isFinite(bin) ? bin : 0;
+    }
+
+    function recomputeConverter(){
+      var bs = parseFloat(bsAmount.value);
+      if (!isFinite(bs)) bs = 0;
+      outUsdBcv.textContent = rates.bcvUsd > 0 ? formatBs(bs / rates.bcvUsd) : '0,00';
+      outEurBcv.textContent = rates.bcvEur > 0 ? formatBs(bs / rates.bcvEur) : '0,00';
+      outUsdtBinance.textContent = rates.binance > 0 ? formatBs(bs / rates.binance) : '0,00';
+    }
+
+    function recomputeRates(){
+      capUsdBcv.textContent = formatBs(rates.bcvUsd);
+      capEurBcv.textContent = formatBs(rates.bcvEur);
+      capUsdtBinance.textContent = formatBs(rates.binance);
+
+      var gapPct = rates.bcvUsd > 0 ? ((rates.binance - rates.bcvUsd) / rates.bcvUsd * 100) : 0;
+      var above = gapPct >= 0;
+      var sign = above ? '+' : '−';
+      gapValue.textContent = sign + formatBs(Math.abs(gapPct)) + '%';
+      gapValue.style.color = above ? 'var(--coral)' : 'var(--teal)';
+      gapNote.innerHTML = 'El paralelo de Binance está <strong>' + formatBs(Math.abs(gapPct)) + '%</strong> por ' +
+        (above ? 'encima' : 'debajo') + ' de la tasa oficial del BCV.';
+
+      var scaleMax = Math.max(rates.bcvUsd, rates.binance, 1) * 1.12;
+      var low = Math.min(rates.bcvUsd, rates.binance);
+      var high = Math.max(rates.bcvUsd, rates.binance);
+      var lowPct = (low / scaleMax * 100).toFixed(2) + '%';
+      var gapSegPct = ((high - low) / scaleMax * 100).toFixed(2) + '%';
+      barBcv.style.width = lowPct;
+      barGap.style.width = gapSegPct;
+      if (above) {
+        barBcv.style.background = 'var(--gold)';
+        barGap.style.background = 'var(--coral)';
+      } else {
+        barBcv.style.background = 'var(--teal)';
+        barGap.style.background = 'var(--gold)';
+      }
+    }
+
+    function recomputeAll(){
+      readRates();
+      recomputeRates();
+      recomputeConverter();
+    }
+
+    function applyFetchedRates(data){
+      DEFAULTS.bcvUsd = data.bcvUsd;
+      DEFAULTS.bcvEur = data.bcvEur;
+      DEFAULTS.binance = data.binance;
+      updatedAt = data.updatedAt;
+      datePill.textContent = 'Sincronizado: ' + formatDateLabel(updatedAt);
+
+      var focused = document.activeElement;
+      if (focused !== inBcvUsd) inBcvUsd.value = data.bcvUsd;
+      if (focused !== inBcvEur) inBcvEur.value = data.bcvEur;
+      if (focused !== inBinance) inBinance.value = data.binance;
+      recomputeAll();
+    }
+
+    function fetchRates(){
+      return fetch('./rates.json?t=' + Date.now(), { cache: 'no-store' })
+        .then(function(res){ if (!res.ok) throw new Error('bad response'); return res.json(); })
+        .then(function(data){ applyFetchedRates(data); return data; })
+        .catch(function(){
+          datePill.textContent = 'Sin conexión — mostrando últimos valores';
+        });
+    }
+
+    [inBcvUsd, inBcvEur, inBinance].forEach(function(el){
+      el.addEventListener('input', recomputeAll);
+    });
+    bsAmount.addEventListener('input', recomputeConverter);
+    chips.forEach(function(chip){
+      chip.addEventListener('click', function(){
+        bsAmount.value = chip.getAttribute('data-amount');
+        recomputeConverter();
+      });
+    });
+    resetBtn.addEventListener('click', function(){
+      inBcvUsd.value = DEFAULTS.bcvUsd;
+      inBcvEur.value = DEFAULTS.bcvEur;
+      inBinance.value = DEFAULTS.binance;
+      recomputeAll();
+    });
+    refreshBtn.addEventListener('click', function(){
+      refreshBtn.classList.add('is-spinning');
+      fetchRates().finally(function(){
+        setTimeout(function(){ refreshBtn.classList.remove('is-spinning'); }, 400);
+      });
+    });
+
+    setInterval(fetchRates, 5 * 60 * 1000);
+
+    recomputeAll();
+    fetchRates();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function(){
+        navigator.serviceWorker.register('./sw.js').catch(function(){});
+      });
+    }
+  })();
+</script>
+</body>
+</html>

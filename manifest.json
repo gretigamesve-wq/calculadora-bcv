@@ -1,0 +1,17 @@
+{
+  "name": "Calculadora BCV",
+  "short_name": "Calc. BCV",
+  "description": "Convierte bolívares a dólares y euros oficiales del BCV y a USDT del paralelo de Binance P2P.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0D1A1E",
+  "theme_color": "#14262B",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
