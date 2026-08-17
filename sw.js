@@ -1,4 +1,4 @@
-var CACHE_NAME = 'calculadora-bcv-v5';
+var CACHE_NAME = 'calculadora-bcv-v6';
 var APP_SHELL = [
   './',
   './index.html',
