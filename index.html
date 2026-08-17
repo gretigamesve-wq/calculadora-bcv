@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es-VE">
+<html lang="es-VE" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -69,7 +69,9 @@
   html{background:var(--bg);}
   body{
     margin:0;
-    background:var(--bg);
+    background:
+      radial-gradient(60rem 30rem at 50% -6rem, var(--gold-fill), transparent 65%),
+      var(--bg);
     color:var(--text);
     font-family:'Trebuchet MS','Segoe UI',Verdana,sans-serif;
     -webkit-font-smoothing:antialiased;
@@ -101,7 +103,17 @@
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
 
-  .masthead{display:flex;flex-direction:column;gap:0.5rem;}
+  .masthead{display:flex;flex-direction:column;gap:0.6rem;}
+  .brand-row{display:flex; align-items:center; gap:0.9rem;}
+  .flag-badge{
+    flex:none;
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    overflow:hidden;
+    box-shadow:0 0 0 1px var(--rule), 0 6px 18px rgba(0,0,0,0.35);
+  }
+  .flag-badge svg{display:block; width:100%; height:100%;}
   .eyebrow{
     font-family:'Trebuchet MS','Segoe UI',sans-serif;
     font-size:0.72rem;
@@ -117,6 +129,35 @@
     color:var(--text-soft);
     font-size:1rem;
     line-height:1.5;
+  }
+  .live-clock{
+    display:inline-flex;
+    align-items:center;
+    gap:0.4rem;
+    align-self:flex-start;
+    margin-top:0.2rem;
+    font-family:'Cascadia Code',Consolas,'SF Mono','Roboto Mono',monospace;
+    font-variant-numeric:tabular-nums;
+    font-size:0.8rem;
+    color:var(--text-soft);
+    border:1px solid var(--rule);
+    border-radius:100px;
+    padding:0.3rem 0.75rem;
+  }
+  .live-clock .dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--teal);
+    flex:none;
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%, 100%{ opacity:1; }
+    50%{ opacity:0.35; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .live-clock .dot{ animation:none; }
   }
 
   .converter{
@@ -350,9 +391,37 @@
 <body>
 <div class="page">
   <header class="masthead">
-    <div class="eyebrow">Monitor cambiario · Venezuela</div>
-    <h1>Calculadora BCV</h1>
+    <div class="brand-row">
+      <span class="flag-badge">
+        <svg viewBox="0 0 100 100" role="img" aria-label="Bandera de Venezuela">
+          <defs>
+            <clipPath id="flagClip"><circle cx="50" cy="50" r="50"/></clipPath>
+            <polygon id="veStar" points="0,-3 0.71,-0.97 2.85,-0.93 1.14,0.37 1.76,2.43 0,1.2 -1.76,2.43 -1.14,0.37 -2.85,-0.93 -0.71,-0.97"/>
+          </defs>
+          <g clip-path="url(#flagClip)">
+            <rect x="0" y="0" width="100" height="33.34" fill="#FFCC00"/>
+            <rect x="0" y="33.34" width="100" height="33.33" fill="#00247D"/>
+            <rect x="0" y="66.67" width="100" height="33.33" fill="#CF142B"/>
+            <g fill="#FFFFFF">
+              <use href="#veStar" transform="translate(22,50) scale(0.85)"/>
+              <use href="#veStar" transform="translate(30,48.04) scale(0.85)"/>
+              <use href="#veStar" transform="translate(38,46.73) scale(0.85)"/>
+              <use href="#veStar" transform="translate(46,46.08) scale(0.85)"/>
+              <use href="#veStar" transform="translate(54,46.08) scale(0.85)"/>
+              <use href="#veStar" transform="translate(62,46.73) scale(0.85)"/>
+              <use href="#veStar" transform="translate(70,48.04) scale(0.85)"/>
+              <use href="#veStar" transform="translate(78,50) scale(0.85)"/>
+            </g>
+          </g>
+        </svg>
+      </span>
+      <div>
+        <div class="eyebrow">Monitor cambiario · Venezuela</div>
+        <h1>Calculadora BCV</h1>
+      </div>
+    </div>
     <p class="lede">Escribe un monto en bolívares y mira al instante cuánto es en dólares y euros oficiales del BCV, y en USDT al paralelo de Binance.</p>
+    <span class="live-clock"><span class="dot"></span><span id="liveClock">Hora actual en Venezuela: --:--:--</span></span>
   </header>
 
   <section class="converter" aria-label="Conversor de bolívares">
@@ -587,6 +656,17 @@
     });
 
     setInterval(fetchRates, 5 * 60 * 1000);
+
+    var liveClock = document.getElementById('liveClock');
+    function updateClock(){
+      var ve = new Date(Date.now() - 4 * 60 * 60 * 1000);
+      var hh = String(ve.getUTCHours()).padStart(2, '0');
+      var mm = String(ve.getUTCMinutes()).padStart(2, '0');
+      var ss = String(ve.getUTCSeconds()).padStart(2, '0');
+      liveClock.textContent = 'Hora actual en Venezuela: ' + hh + ':' + mm + ':' + ss;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
     recomputeAll();
     fetchRates();
